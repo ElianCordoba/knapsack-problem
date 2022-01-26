@@ -14,8 +14,8 @@ export type Fitness = number;
  */
 // 
 
-export type FitnessFn = (items: Item[], weight_limit: number, genome: Genome,) => Fitness;
-export type PartiallyAppliedFitnessFn = (genome: Genome) => Fitness;
+export type FitnessFn = (items: Item[], weight_limit: number, genome: Genome,) => [Fitness, number?];
+export type PartiallyAppliedFitnessFn = (genome: Genome) => [Fitness, number?];
 
 export type SelectionFn = (population: Population) => [Genome, Genome];
 export type CrossoverFn = (
