@@ -2,7 +2,8 @@ import { expect, test } from "vitest";
 import { Genetic_Solution } from "../src/core";
 import { fitness } from "../src/fitness";
 import { Genome, Item, Population } from "../src/types";
-import { items } from '../examples/1-simple-run'
+
+import { items } from "../examples/_items";
 
 const WEIGHT_LIMIT = 1000;
 
