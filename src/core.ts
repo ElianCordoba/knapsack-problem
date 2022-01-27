@@ -1,5 +1,5 @@
 import { fitness } from './fitness';
-import { CrossoverFn, Fitness, FitnessFn, Gene, Genome, Item, MutationFn, Options, PartiallyAppliedFitnessFn, Population, SelectionFn } from './types'
+import { CrossoverFn, Gene, Genome, Item, MutationFn, Options, PartiallyAppliedFitnessFn, Population, SelectionFn } from './types'
 import { create_array, generate_genome, genome_to_string, get_random_number_in_range, last_item_from_array, range, weighted_selection } from './utils';
 
 export class Genetic_Solution {
@@ -8,10 +8,13 @@ export class Genetic_Solution {
   generation_limit: number;
   fitness_fn: PartiallyAppliedFitnessFn;
 
+  population_size: number;
   max_fitness?: number;
   selection_fn: SelectionFn;
   crossover_fn: CrossoverFn;
   mutation_fn: MutationFn;
+
+  silent: boolean;
 
   constructor({
     // Required options
@@ -20,10 +23,14 @@ export class Genetic_Solution {
     generation_limit,
 
     // Optional options
+    population_size,
     max_fitness,
     selection_fn,
     crossover_fn,
     mutation_fn,
+
+    // Misc
+    silent
   }: Options) {
     this.items = items;
     this.weight_limit = weight_limit;
@@ -32,33 +39,40 @@ export class Genetic_Solution {
     this.fitness_fn = fitness.bind(this, this.items, this.weight_limit);
 
     this.max_fitness = max_fitness;
+    this.population_size = population_size || 10;
     this.selection_fn = selection_fn || this.selection_pair;
     this.crossover_fn = crossover_fn || this.single_point_crossover;
     this.mutation_fn = mutation_fn || this.gene_mutation;
+
+    this.silent = silent || false
   }
 
-  run(): [Genome, Fitness] {
+  run() {
     // TODO population size option
-    let population = this.generate_population(10, this.items.length);
+    let population = this.generate_population(this.population_size, this.items.length);
 
     let i = 0;
 
     for (let _ of range(this.generation_limit)) {
       population = this.sort_population(population);
 
-      this.print_stats(population, i);
+      if (!this.silent) {
+        this.print_stats(population, i);
+      }
 
       // If max_fitness is present and we matched or exceed it, return early
-      if (this.max_fitness && this.max_fitness <= this.fitness_fn(population[0])) {
-        return [population[0], i]
+      if (this.max_fitness) {
+        const current_max_fitness = this.fitness_fn(population[0]).fitness;
+
+        if (this.max_fitness <= current_max_fitness) {
+          break;
+        }
+
       }
 
       const next_generation = population.slice(0, 2);
 
-      const iterations = Math.floor(population.length / 2) - 1
-
-      // while (next_generation.length <= 10 // population size)
-      for (let _ of range(iterations)) {
+      while (next_generation.length <= this.population_size) {
         const parents = this.selection_fn(population);
         let [offspring_a, offspring_b] = this.crossover_fn(
           parents[0],
@@ -74,7 +88,13 @@ export class Genetic_Solution {
       i++;
     }
 
-    return [this.sort_population(population)[0], i];
+    const best_genome = this.sort_population(population)[0]
+
+    return {
+      best_genome,
+      fitness: this.fitness_fn(best_genome).fitness,
+      number_of_generations: i
+    }
   }
 
   // Genetic functions
@@ -142,7 +162,8 @@ export class Genetic_Solution {
   selection_pair(
     population: Population
   ) {
-    const fitness = population.map(x => this.fitness_fn(x));
+    // We add a random value to the fitness, we need at least two genomes with actual fitness (exceeding the max_weigth retulst in 0 fitness) to pass to the selection function
+    const fitness = population.map(x => this.fitness_fn(x).fitness + Math.random());
 
     return weighted_selection(
       population,
@@ -163,7 +184,7 @@ export class Genetic_Solution {
   sort_population(population: Population): Population {
     const results = population.map((genome) => ({
       genome,
-      fitness: this.fitness_fn(genome),
+      fitness: this.fitness_fn(genome).fitness,
     }));
 
     const sorted_result = results.sort((a, b) =>
@@ -173,19 +194,21 @@ export class Genetic_Solution {
     return sorted_result.map((x) => x.genome);
   }
 
-  population_fitness(population: Population): Fitness {
+  population_fitness(population: Population) {
     let fitness = 0;
-    population.map((genome) => (fitness += this.fitness_fn(genome)));
+    population.map((genome) => (fitness += this.fitness_fn(genome).fitness));
 
     return fitness;
   }
 
+
   print_stats(population: Population, generation_id: number) {
     console.log(`GENERATION ${generation_id}`);
     console.log("=============");
-    console.log(`Population: ${population.map(genome_to_string)}`);
+    // console.log("Population:");
+    // console.log(population.map(genome_to_string).join("\n"))
     console.log(
-      `Avg. Fitness: ${this.population_fitness(population) / population.length}`
+      `Avg. Fitness: ${(this.population_fitness(population) / population.length).toFixed(2)}`
     );
 
     const sorted_population = this.sort_population(population);
@@ -193,15 +216,19 @@ export class Genetic_Solution {
     const best_genome = sorted_population[0];
     const worst_genome = last_item_from_array(sorted_population);
 
+    const { fitness: best_fitness, weigth: best_weigth } = this.fitness_fn(best_genome)
+    const { fitness: worst_fitness, weigth: worst_weigth } = this.fitness_fn(worst_genome)
+
     // TODO: Instead of recalculating the fitness you can return it from the sort_population function
     console.log(
-      `Best: ${genome_to_string(best_genome)} {${this.fitness_fn(best_genome)})`
+      `Best: ${genome_to_string(best_genome).padEnd(population.length + 5)}`
     );
+    console.log(`fitness: ${String(best_fitness).padEnd(8)} | weigth: ${best_weigth}`)
+
     console.log(
-      `Worst: ${genome_to_string(worst_genome)} (${this.fitness_fn(
-        worst_genome
-      )})`
+      `Worst: ${genome_to_string(worst_genome).padEnd(population.length + 5)}`
     );
+    console.log(`fitness: ${String(worst_fitness).padEnd(8)} | weigth: ${worst_weigth}`)
 
     console.log("");
   }
