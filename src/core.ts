@@ -39,7 +39,7 @@ export class Genetic_Solution {
     this.fitness_fn = fitness.bind(this, this.items, this.weight_limit);
 
     this.max_fitness = max_fitness;
-    this.population_size = population_size || 10;
+    this.population_size = population_size || 500;
     this.selection_fn = selection_fn || this.selection_pair;
     this.crossover_fn = crossover_fn || this.single_point_crossover;
     this.mutation_fn = mutation_fn || this.gene_mutation;
@@ -48,7 +48,6 @@ export class Genetic_Solution {
   }
 
   run() {
-    // TODO population size option
     let population = this.generate_population(this.population_size, this.items.length);
 
     let i = 0;
@@ -70,6 +69,7 @@ export class Genetic_Solution {
 
       }
 
+      // Elitism
       const next_generation = population.slice(0, 2);
 
       while (next_generation.length <= this.population_size) {
@@ -107,7 +107,7 @@ export class Genetic_Solution {
     const genome_copy = [...genome];
 
     for (let _ of range(iterations)) {
-      const will_mutate = Math.random() > probability;
+      const will_mutate = probability > Math.random();
 
       if (!will_mutate) {
         continue;
@@ -138,6 +138,7 @@ export class Genetic_Solution {
   single_point_crossover(
     a: Genome,
     b: Genome,
+    probability: number = 0.5,
     predefined_crossover_point?: number
   ): [Genome, Genome] {
     if (a.length !== b.length) {
@@ -146,6 +147,12 @@ export class Genetic_Solution {
 
     // Hot path, we need the genomes to be longer than one gene to crossover them
     if (a.length === 1) {
+      return [a, b];
+    }
+
+    const will_crossover = probability > Math.random();
+
+    if (!will_crossover) {
       return [a, b];
     }
 
