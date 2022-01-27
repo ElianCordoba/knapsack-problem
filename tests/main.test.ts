@@ -16,11 +16,12 @@ test("generate_population", () => {
   expect(population[0]).instanceOf(Array).length(3);
 });
 
-test("single_point_crossover", () => {
+test.only("single_point_crossover", () => {
   const a = 'aaaaaa' as any
   const b = 'bbbbbb' as any
 
-  const [new_a, new_b] = solution.single_point_crossover(a, b, 0);
+  // The 1 means we guarantee the crossover
+  const [new_a, new_b] = solution.single_point_crossover(a, b, 1, 3);
 
   expect(new_a.length).toBe(a.length)
   expect(new_b.length).toBe(b.length)

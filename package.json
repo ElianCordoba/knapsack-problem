@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "example-1": "tsc && node dist/examples/1-simple-run.js",
+    "example-2": "tsc && node dist/examples/2-high-mutation-rate.js",
     "debug": "tsc && node --inspect-brk dist/test.js",
     "watch": "tsc --watch --incremental",
     "test": "vitest"
@@ -15,6 +16,7 @@
     "weighted": "^1.0.0"
   },
   "devDependencies": {
+    "@types/node": "^17.0.12",
     "vitest": "^0.2.0"
   }
 }

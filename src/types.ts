@@ -10,8 +10,6 @@ export type Population = Genome[];
  * don't need to pass them.
  * Because of this, we need a different type for the function that gets pass during the initialization of the solution
  */
-// 
-
 export type FitnessFn = (items: Item[], weight_limit: number, genome: Genome,) => { fitness: number, weigth: number };
 export type PartiallyAppliedFitnessFn = (genome: Genome) => { fitness: number, weigth: number };
 

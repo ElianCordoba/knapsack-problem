@@ -1,5 +1,5 @@
 import select from "weighted";
-import { Genome } from "./types";
+import { Genome, Item } from "./types";
 
 // Todo: Use Typed arrays?
 export function create_array<T>(length: number, fillerFn: () => T) {
@@ -62,4 +62,18 @@ export function* range(limit: number) {
   while (x < limit - 1) {
     yield (x += 1);
   }
+}
+
+export function create_item_list(size: number): Item[] {
+  const result: Item[] = []
+  let i = 0;
+
+  for (let _ of range(size)) {
+    i++;
+    const value = Math.floor(Math.random() * 500)
+    const weigth = Math.floor(Math.random() * 100)
+    result.push([`item ${i}`, value, weigth])
+  }
+
+  return result;
 }
