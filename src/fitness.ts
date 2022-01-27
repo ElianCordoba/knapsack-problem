@@ -1,6 +1,6 @@
-import { Fitness, Genome, Item } from "./types";
+import { FitnessFn, Genome, Item } from "./types";
 
-export function fitness(items: Item[], weight_limit: number, genome: Genome): [Fitness, number?] {
+export const fitness: FitnessFn = (items: Item[], weight_limit: number, genome: Genome) => {
   if (genome.length !== items.length) {
     throw new Error("Genome and things must be of same length");
   }
@@ -20,9 +20,9 @@ export function fitness(items: Item[], weight_limit: number, genome: Genome): [F
     total_weight += thing[2];
 
     if (total_weight > weight_limit) {
-      return [0];
+      return { fitness: 0, weigth: 0 }
     }
   }
 
-  return [total_value, total_weight];
+  return { fitness: total_value, weigth: total_weight };
 }

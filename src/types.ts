@@ -5,8 +5,6 @@ export type Gene = 0 | 1;
 export type Genome = Gene[];
 export type Population = Genome[];
 
-export type Fitness = number;
-
 /**
  * To simplify the use of the fitness function, we apply the first two arguments so that when we use it in the solution instance we
  * don't need to pass them.
@@ -14,8 +12,8 @@ export type Fitness = number;
  */
 // 
 
-export type FitnessFn = (items: Item[], weight_limit: number, genome: Genome,) => [Fitness, number?];
-export type PartiallyAppliedFitnessFn = (genome: Genome) => [Fitness, number?];
+export type FitnessFn = (items: Item[], weight_limit: number, genome: Genome,) => { fitness: number, weigth: number };
+export type PartiallyAppliedFitnessFn = (genome: Genome) => { fitness: number, weigth: number };
 
 export type SelectionFn = (population: Population) => [Genome, Genome];
 export type CrossoverFn = (
@@ -30,8 +28,11 @@ export interface Options {
   weight_limit: number;
   generation_limit: number;
 
+  population_size?: number;
   max_fitness?: number;
   selection_fn?: SelectionFn;
   crossover_fn?: CrossoverFn;
   mutation_fn?: MutationFn;
+
+  silent?: boolean;
 }
